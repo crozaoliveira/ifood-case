@@ -5,7 +5,7 @@ from typing import Iterable
 from src.utils import generate_year_month_range
 
 from src.config import (
-    DATE_FROM, DATE_TO, VOLUME_PATH, RUN_ID,
+    DATE_FROM, DATE_TO, ROOT_PATH, RUN_ID,
     TLC_BASE_URL, LANDING_PATH
 )
 
@@ -19,7 +19,7 @@ def build_file_url(year: int, month: int) -> str:
 
 
 def build_landing_relative_key(year: int, month: int) -> str:
-    return f"{VOLUME_PATH}/{LANDING_PATH}/{RUN_ID}/{build_file_name(year, month)}"
+    return f"{ROOT_PATH}/{LANDING_PATH}/{build_file_name(year, month)}"
 
 
 def download_file(url: str, destination_path: Path) -> None:
