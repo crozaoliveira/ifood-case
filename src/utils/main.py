@@ -45,13 +45,8 @@ def generate_year_month_range(date_from: str, date_to: str) -> list[tuple[int, i
     start_year, start_month = parse_year_month(date_from)
     end_year, end_month = parse_year_month(date_to)
 
-    print(f'Qual o resultado de start_year * 12? {start_year * 12 + start_month}')
-    print(f'Qual o resultado de end_year * 12? {end_year * 12 + end_month}')
-
     start_value = start_year * 12 + start_month
     end_value = end_year * 12 + end_month
-
-    print(f'start_value: {start_value}, end_value: {end_value}')
 
     if start_value > end_value:
         raise ValueError(
