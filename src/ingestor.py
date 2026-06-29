@@ -37,7 +37,6 @@ def download_file(url: str, destination_path: Path) -> None:
 def ingest_file(year: int, month: int) -> None:
     url = build_file_url(year, month)
     s3_key = build_landing_relative_key(year, month)
-    file_path = build_file_name(year, month)
     print(f"[DOWNLOAD] {url}")
     download_file(url, s3_key)
     print(f"[UPLOAD] {s3_key}")

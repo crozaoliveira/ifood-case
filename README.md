@@ -22,4 +22,6 @@ from src.bronze import create_bronze
 create_bronze(spark)
 ```
 
-Também é possível executar `python -m src.ingestor` e `python -m src.bronze` a partir da raiz.
+Depois, execute a Silver com `python -m src.silver`. Ela grava Parquet no diretório
+`silver` do `RUN_ID` e a tabela Delta `workspace.ifood_case.ny_yellow_silver`,
+particionada por ano e mês.
