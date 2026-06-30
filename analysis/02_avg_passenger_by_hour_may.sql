@@ -6,6 +6,6 @@ SELECT
     ROUND(AVG(PassengerCount), 2) AS AvgPassengerCount
 FROM ny_tlc_silver
 WHERE PickupYear = 2023
-  AND PickupMonth = 2
+  AND PickupMonth = 5
 GROUP BY PickupHour
 ORDER BY PickupHour;
