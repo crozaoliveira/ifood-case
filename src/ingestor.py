@@ -11,8 +11,6 @@ from src.utils import generate_year_month_range
 DATASET_FILE_PREFIXES = {
     "yellow": "yellow",
     "green": "green",
-    "fh": "fhv",
-    "hvfh": "fhvhv",
 }
 DATASET_ALIASES = tuple(DATASET_FILE_PREFIXES)
 

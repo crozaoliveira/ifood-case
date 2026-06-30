@@ -10,8 +10,6 @@ from src.config import BRONZE_PATH, LANDING_PATH, ROOT_PATH, RUN_ID, SCHEMA_PATH
 TAXI_CATEGORIES = {
     "yellow": "YELLOW",
     "green": "GREEN",
-    "fh": "FH",
-    "hvfh": "HVFH",
 }
 
 BRONZE_COLUMN_TYPES = {
