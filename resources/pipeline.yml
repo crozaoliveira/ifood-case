@@ -1,0 +1,62 @@
+resources:
+  jobs:
+    Teste_Ifood_Case:
+      name: Pipeline Ifood-Case
+      tasks:
+        - task_key: ingestor
+          spark_python_task:
+            python_file: /Workspace/Users/carlosdaroza.oliveira5@gmail.com/Ifood/ifood-case/src/ingestor.py
+            parameters:
+              - --date-from
+              - "{{job.parameters.date_from}}"
+              - --date-to
+              - "{{job.parameters.date_to}}"
+              - --run-id
+              - "{{job.parameters.run_id}}"
+              - --job-run-id
+              - "{{job.run_id}}"
+          environment_key: Default
+        - task_key: bronze
+          depends_on:
+            - task_key: ingestor
+          spark_python_task:
+            python_file: /Workspace/Users/carlosdaroza.oliveira5@gmail.com/Ifood/ifood-case/src/bronze.py
+            parameters:
+              - --date-from
+              - "{{job.parameters.date_from}}"
+              - --date-to
+              - "{{job.parameters.date_to}}"
+              - --run-id
+              - "{{job.parameters.run_id}}"
+              - --job-run-id
+              - "{{job.run_id}}"
+          environment_key: Default
+        - task_key: silver
+          depends_on:
+            - task_key: bronze
+          spark_python_task:
+            python_file: /Workspace/Users/carlosdaroza.oliveira5@gmail.com/Ifood/ifood-case/src/silver.py
+            parameters:
+              - --date-from
+              - "{{job.parameters.date_from}}"
+              - --date-to
+              - "{{job.parameters.date_to}}"
+              - --run-id
+              - "{{job.parameters.run_id}}"
+              - --job-run-id
+              - "{{job.run_id}}"
+          environment_key: Default
+      queue:
+        enabled: true
+      parameters:
+        - name: date_from
+          default: 2023/01
+        - name: date_to
+          default: 2023/02
+        - name: run_id
+          default: "20632070056749"
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      performance_target: PERFORMANCE_OPTIMIZED
