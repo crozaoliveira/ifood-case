@@ -5,6 +5,6 @@ SELECT
     PickupYear,
     PickupMonth,
     ROUND(AVG(TotalAmount), 2) AS AvgTotalAmount
-FROM ny_yellow_silver
+FROM ny_tlc_silver
 GROUP BY PickupYear, PickupMonth
 ORDER BY PickupYear, PickupMonth;
