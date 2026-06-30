@@ -106,13 +106,13 @@ Use `prod` somente se o usuário de execução tiver as permissões necessárias
 Execute com os parâmetros padrão (`2023/01` a `2023/05`):
 
 ```bash
-databricks bundle run -t dev Teste_Ifood_Case
+databricks bundle run -t dev Pipeline_Ifood_Case
 ```
 
 Para definir o período e o identificador da execução:
 
 ```bash
-databricks bundle run -t dev Teste_Ifood_Case --params date_from=2023/01,date_to=2023/05,run_id=case_2023_01_05
+databricks bundle run -t dev Pipeline_Ifood_Case --params date_from=2023/01,date_to=2023/05,run_id=case_2023_01_05
 ```
 
 Parâmetros disponíveis:
