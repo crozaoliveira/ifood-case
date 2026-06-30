@@ -1,25 +1,47 @@
 import os
-import requests
 from pathlib import Path
 from typing import Iterable
+
+import requests
+
+from src.config import DATE_FROM, DATE_TO, LANDING_PATH, ROOT_PATH, RUN_ID, TLC_BASE_URL
 from src.utils import generate_year_month_range
 
-from src.config import (
-    DATE_FROM, DATE_TO, VOLUME_PATH, RUN_ID,
-    TLC_BASE_URL, LANDING_PATH
-)
+
+DATASET_FILE_PREFIXES = {
+    "yellow": "yellow",
+    "green": "green",
+    "fh": "fhv",
+    "hvfh": "fhvhv",
+}
+DATASET_ALIASES = tuple(DATASET_FILE_PREFIXES)
 
 
-def build_file_name(year: int, month: int) -> str:
-    return f"yellow_tripdata_{year}-{month:02d}.parquet"
+def get_file_prefix(dataset: str) -> str:
+    try:
+        return DATASET_FILE_PREFIXES[dataset]
+    except KeyError as error:
+        supported = ", ".join(DATASET_ALIASES)
+        raise ValueError(
+            f"Tipo de dataset inválido: {dataset!r}. Tipos suportados: {supported}."
+        ) from error
 
 
-def build_file_url(year: int, month: int) -> str:
-    return f"{TLC_BASE_URL}/{build_file_name(year, month)}"
+def build_file_name(dataset: str, year: int, month: int) -> str:
+    return f"{get_file_prefix(dataset)}_tripdata_{year}-{month:02d}.parquet"
 
 
-def build_landing_relative_key(year: int, month: int) -> str:
-    return f"{VOLUME_PATH}/{LANDING_PATH}/{RUN_ID}/{build_file_name(year, month)}"
+def build_file_url(dataset: str, year: int, month: int) -> str:
+    return f"{TLC_BASE_URL}/{build_file_name(dataset, year, month)}"
+
+
+def build_dataset_landing_path(dataset: str) -> str:
+    get_file_prefix(dataset)
+    return f"{ROOT_PATH}/{LANDING_PATH}/{dataset}"
+
+
+def build_landing_relative_key(dataset: str, year: int, month: int) -> str:
+    return f"{build_dataset_landing_path(dataset)}/{build_file_name(dataset, year, month)}"
 
 
 def download_file(url: str, destination_path: Path) -> None:
@@ -34,26 +56,37 @@ def download_file(url: str, destination_path: Path) -> None:
                     file.write(chunk)
 
 
-def ingest_file(year: int, month: int) -> None:
-    url = build_file_url(year, month)
-    s3_key = build_landing_relative_key(year, month)
-    file_path = build_file_name(year, month)
-    print(f"[DOWNLOAD] {url}")
-    download_file(url, s3_key)
-    print(f"[UPLOAD] {s3_key}")
+def ingest_file(dataset: str, year: int, month: int) -> None:
+    url = build_file_url(dataset, year, month)
+    destination = Path(build_landing_relative_key(dataset, year, month))
+    period = f"{year}-{month:02d}"
 
-    print(f"[OK] Arquivo enviado para o S3: {s3_key}")
+    if destination.exists():
+        print(f"[SKIP] dataset={dataset} período={period} arquivo={destination}")
+        return
+
+    print(f"[DOWNLOAD] dataset={dataset} período={period} url={url}")
+    try:
+        download_file(url, destination)
+    except Exception as error:
+        raise RuntimeError(
+            f"Falha ao ingerir dataset={dataset} período={period} url={url}"
+        ) from error
+
+    print(f"[OK] dataset={dataset} período={period} arquivo={destination}")
 
 
 def ingest_months(periods: Iterable[tuple[int, int]]) -> None:
     print("=" * 80)
-    print("Iniciando ingestão da landing zone no S3")
+    print("Iniciando ingestão da landing zone TLC")
     print(f"Job Run ID: {RUN_ID}")
     print(f"Período: {DATE_FROM} a {DATE_TO}")
+    print(f"Datasets: {', '.join(DATASET_ALIASES)}")
     print("=" * 80)
 
     for year, month in periods:
-        ingest_file(year, month)
+        for dataset in DATASET_ALIASES:
+            ingest_file(dataset, year, month)
 
     print("[OK] Ingestão finalizada com sucesso.")
 

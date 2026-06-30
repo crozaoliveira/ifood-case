@@ -2,7 +2,9 @@ from functools import reduce
 from pathlib import Path
 
 from src.config import (
-    VOLUME_PATH, RUN_ID, LANDING_PATH, BRONZE_PATH
+    RUN_ID, 
+    SCHEMA_PATH, ROOT_PATH, 
+    LANDING_PATH, BRONZE_PATH
 )
 
 from pyspark.sql import DataFrame, SparkSession
@@ -10,18 +12,17 @@ from pyspark.sql.functions import current_timestamp, lit, col
 
 
 def get_spark_session() -> SparkSession:
-    """Reutiliza a sessão Spark gerenciada pelo Databricks."""
     return (
         SparkSession.builder.getOrCreate()
     )
 
 
 def build_landing_path() -> str:
-    return f"{VOLUME_PATH}/{LANDING_PATH}/{RUN_ID}"
+    return f"{ROOT_PATH}/{LANDING_PATH}"
 
 
 def build_bronze_path() -> str:
-    return f"{VOLUME_PATH}/{BRONZE_PATH}"
+    return f"{ROOT_PATH}/{BRONZE_PATH}"
 
 
 def list_parquet_files(path: str) -> list[str]:
@@ -70,15 +71,18 @@ def create_bronze(spark: SparkSession | None = None) -> None:
     for file_path in parquet_files:
         print(f"[READ FILE] {file_path}")
 
-        df = (
-            spark.read.parquet(file_path)
-            .transform(standardize_schema)
-            .withColumn("run_id", lit(RUN_ID))
-            .withColumn("ingestion_timestamp", current_timestamp())
-            .withColumn("source_file", lit(file_path))
-        )
+        try: 
+            df = (
+                spark.read.parquet(file_path)
+                .transform(standardize_schema)
+                .withColumn("run_id", lit(RUN_ID))
+                .withColumn("ingestion_timestamp", current_timestamp())
+                .withColumn("source_file", lit(file_path))
+            )
 
-        dfs.append(df)
+            dfs.append(df)
+        except Exception as e:
+            raise Exception(f"[WARN] Erro ao processar arquivo: {file_path} - {e}")
 
     bronze_df = reduce(
         lambda df1, df2: df1.unionByName(df2, allowMissingColumns=True),
@@ -86,12 +90,26 @@ def create_bronze(spark: SparkSession | None = None) -> None:
     )
 
     print(f"[INFO] Registros processados: {bronze_df.count()}")
-    bronze_df.write.mode("overwrite").parquet(bronze_path)
-    print("[OK] Camada Bronze criada com sucesso.")
 
-"""
-Mesmo depois de salvar o parquet bronze, considerar criar uma tabela bronze em um schema ny_yellow_lakehouse.
-"""
+    try:
+        bronze_df.write.mode("overwrite").parquet(bronze_path)
+        print(f"[INFO] Camada Bronze criada com sucesso em: {bronze_path}")
+    except Exception as e:
+        raise Exception(f"[WARN] Erro ao criar camada Bronze: {e}")
+
+    try:
+        bronze_table = f"{SCHEMA_PATH}.ny_yellow_bronze"
+        (
+            bronze_df.write
+            .mode("overwrite")
+            .format("delta")
+            .saveAsTable(bronze_table)
+        )
+        print(f"[INFO] Tabela Bronze criada com sucesso em: {bronze_table}")
+    except Exception as e:
+        raise Exception(f"[WARN] Erro ao criar tabela Bronze: {e}")
+
+    print("[OK] Camada Bronze criada com sucesso.")
 
 if __name__ == "__main__":
     create_bronze()
