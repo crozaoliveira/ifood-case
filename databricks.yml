@@ -1,0 +1,23 @@
+bundle:
+  name: ifood-case
+
+include:
+  - resources/*.yml
+
+sync:
+  include:
+    - src/**
+    - analysis/**
+    - notebooks/**
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}

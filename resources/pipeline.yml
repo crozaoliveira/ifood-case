@@ -5,7 +5,7 @@ resources:
       tasks:
         - task_key: ingestor
           spark_python_task:
-            python_file: /Workspace/Users/carlosdaroza.oliveira5@gmail.com/Ifood/ifood-case/src/ingestor.py
+            python_file: ${workspace.file_path}/src/ingestor.py
             parameters:
               - --date-from
               - "{{job.parameters.date_from}}"
@@ -20,7 +20,7 @@ resources:
           depends_on:
             - task_key: ingestor
           spark_python_task:
-            python_file: /Workspace/Users/carlosdaroza.oliveira5@gmail.com/Ifood/ifood-case/src/bronze.py
+            python_file: ${workspace.file_path}/src/bronze.py
             parameters:
               - --date-from
               - "{{job.parameters.date_from}}"
@@ -35,7 +35,7 @@ resources:
           depends_on:
             - task_key: bronze
           spark_python_task:
-            python_file: /Workspace/Users/carlosdaroza.oliveira5@gmail.com/Ifood/ifood-case/src/silver.py
+            python_file: ${workspace.file_path}/src/silver.py
             parameters:
               - --date-from
               - "{{job.parameters.date_from}}"
@@ -52,9 +52,9 @@ resources:
         - name: date_from
           default: 2023/01
         - name: date_to
-          default: 2023/02
+          default: 2023/05
         - name: run_id
-          default: "20632070056749"
+          default: ""
       environments:
         - environment_key: Default
           spec:
