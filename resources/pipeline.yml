@@ -1,0 +1,62 @@
+resources:
+  jobs:
+    Teste_Ifood_Case:
+      name: Pipeline Ifood-Case
+      tasks:
+        - task_key: ingestor
+          spark_python_task:
+            python_file: ${workspace.file_path}/src/ingestor.py
+            parameters:
+              - --date-from
+              - "{{job.parameters.date_from}}"
+              - --date-to
+              - "{{job.parameters.date_to}}"
+              - --run-id
+              - "{{job.parameters.run_id}}"
+              - --job-run-id
+              - "{{job.run_id}}"
+          environment_key: Default
+        - task_key: bronze
+          depends_on:
+            - task_key: ingestor
+          spark_python_task:
+            python_file: ${workspace.file_path}/src/bronze.py
+            parameters:
+              - --date-from
+              - "{{job.parameters.date_from}}"
+              - --date-to
+              - "{{job.parameters.date_to}}"
+              - --run-id
+              - "{{job.parameters.run_id}}"
+              - --job-run-id
+              - "{{job.run_id}}"
+          environment_key: Default
+        - task_key: silver
+          depends_on:
+            - task_key: bronze
+          spark_python_task:
+            python_file: ${workspace.file_path}/src/silver.py
+            parameters:
+              - --date-from
+              - "{{job.parameters.date_from}}"
+              - --date-to
+              - "{{job.parameters.date_to}}"
+              - --run-id
+              - "{{job.parameters.run_id}}"
+              - --job-run-id
+              - "{{job.run_id}}"
+          environment_key: Default
+      queue:
+        enabled: true
+      parameters:
+        - name: date_from
+          default: 2023/01
+        - name: date_to
+          default: 2023/05
+        - name: run_id
+          default: ""
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      performance_target: PERFORMANCE_OPTIMIZED

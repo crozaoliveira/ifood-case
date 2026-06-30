@@ -1,10 +1,11 @@
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql.functions import col, current_timestamp, hour, lit, month, year
+from pyspark.sql.functions import col, coalesce
+import pyspark.sql.functions as sfn
 
 from src.config import BRONZE_PATH, ROOT_PATH, RUN_ID, SCHEMA_PATH, SILVER_PATH
 
-bronze_table = f"{SCHEMA_PATH}.ny_yellow_bronze"
-silver_table = f"{SCHEMA_PATH}.ny_yellow_silver"
+bronze_table = f"{SCHEMA_PATH}.ny_tlc_bronze"
+silver_table = f"{SCHEMA_PATH}.ny_tlc_silver"
 
 
 def get_spark_session() -> SparkSession:
@@ -44,18 +45,24 @@ def transform_silver(bronze_df: DataFrame) -> DataFrame:
             col("VendorID").cast("long").alias("VendorId"),
             col("passenger_count").cast("double").alias("PassengerCount"),
             col("total_amount").cast("decimal(18,2)").alias("TotalAmount"),
-            col("tpep_pickup_datetime").cast("timestamp").alias("PickupDateTime"),
-            col("tpep_dropoff_datetime").cast("timestamp").alias("DropOffDateTime"),
+            coalesce(
+                col("tpep_pickup_datetime"),
+                col("lpep_pickup_datetime"),
+            ).cast("timestamp").alias("PickupDateTime"),
+            coalesce(
+                col("tpep_dropoff_datetime"),
+                col("lpep_dropoff_datetime"),
+            ).cast("timestamp").alias("DropOffDateTime"),
+            col("taxi_category").alias("TaxiCategory"),
         )
         .filter(col("PickupDateTime").isNotNull())
-        .filter(year("PickupDateTime" >= 2023))
         .filter(col("DropOffDateTime").isNotNull())
         .filter(col("DropOffDateTime") >= col("PickupDateTime"))
-        .withColumn("PickupYear", year("PickupDateTime"))
-        .withColumn("PickupMonth", month("PickupDateTime"))
-        .withColumn("PickupHour", hour("PickupDateTime"))
-        .withColumn("RunId", lit(RUN_ID))
-        .withColumn("ProcessedAt", current_timestamp())
+        .withColumn("PickupYear", sfn.year("PickupDateTime"))
+        .withColumn("PickupMonth", sfn.month("PickupDateTime"))
+        .withColumn("PickupHour", sfn.hour("PickupDateTime"))
+        .withColumn("RunId", sfn.lit(RUN_ID))
+        .withColumn("ProcessedAt", sfn.current_timestamp())
     )
 
 
@@ -63,7 +70,7 @@ def write_silver_parquet(silver_df: DataFrame) -> None:
     silver_path = build_silver_path()
     (
         silver_df.write.mode("overwrite")
-        .partitionBy("PickupYear", "PickupMonth")
+        .partitionBy("TaxiCategory", "PickupYear", "PickupMonth")
         .parquet(silver_path)
     )
     print(f"[INFO] Camada Silver criada com sucesso em: {silver_path}")
