@@ -27,6 +27,6 @@ RUN_ID = args.run_id or args.job_run_id
 TLC_BASE_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data"
 
 ROOT_PATH = f"{VOLUME_PATH}/{RUN_ID}"
-LANDING_PATH = f"{table_name}/landing"
-BRONZE_PATH = f"{table_name}/bronze"
-SILVER_PATH = f"{table_name}/silver"
+LANDING_PATH = "landing"
+BRONZE_PATH = "bronze"
+SILVER_PATH = "silver"

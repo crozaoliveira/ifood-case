@@ -37,9 +37,7 @@ def build_file_url(dataset: str, year: int, month: int) -> str:
 
 def build_dataset_landing_path(dataset: str) -> str:
     get_file_prefix(dataset)
-    if dataset == "yellow":
-        return f"{ROOT_PATH}/{LANDING_PATH}"
-    return f"{ROOT_PATH}/{dataset}/landing"
+    return f"{ROOT_PATH}/{LANDING_PATH}/{dataset}"
 
 
 def build_landing_relative_key(dataset: str, year: int, month: int) -> str:

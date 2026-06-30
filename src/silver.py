@@ -48,6 +48,7 @@ def transform_silver(bronze_df: DataFrame) -> DataFrame:
             col("tpep_dropoff_datetime").cast("timestamp").alias("DropOffDateTime"),
         )
         .filter(col("PickupDateTime").isNotNull())
+        .filter(year("PickupDateTime" >= 2023))
         .filter(col("DropOffDateTime").isNotNull())
         .filter(col("DropOffDateTime") >= col("PickupDateTime"))
         .withColumn("PickupYear", year("PickupDateTime"))
