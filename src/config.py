@@ -5,10 +5,10 @@ from src.utils import generate_execution_id
 
 catalog_name = "workspace"
 schema_name = "ifood_case"
-table_name = "yellow_taxi"
+table_name = "ny_tlc_tripdata"
 
 SCHEMA_PATH = f"{catalog_name}.{schema_name}"
-VOLUME_PATH = f"/Volumes/{catalog_name}/{schema_name}/ny_yellow_taxis"
+VOLUME_PATH = f"/Volumes/{catalog_name}/{schema_name}/{table_name}"
 
 parser = argparse.ArgumentParser()
 
