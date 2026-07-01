@@ -6,6 +6,7 @@ include:
 
 sync:
   include:
+    - main_*.py
     - src/**
     - analysis/**
     - notebooks/**

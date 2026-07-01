@@ -3,5 +3,7 @@ case/
 data/
 __pycache__/
 .ipynb_checkpoints/
+.databrickscfg
 .venv/
+.vscode/
 *.log
